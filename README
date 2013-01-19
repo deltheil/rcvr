@@ -1,0 +1,23 @@
+                           .:. rcvr (re-cov-er) .:.
+
+rcvr is a tiny utility written in C for libcurl[1] easy handle pooling.
+
+It's shamelessly inspired from libzdb[2], a database connection pool library.
+
+Also, it's still *work in progress* & undocumented!
+
+Re-cycling the same easy handle is a recommended practice[3]:
+
+  After each single curl_easy_perform(3) operation, libcurl
+  will keep the connection alive and open. A subsequent req-
+  -uest using the same easy handle to the same host might
+  just be able to use the already open connection! This red-
+  -uces network impact a lot.
+
+Here the goal is to make it easy for a developer to reuse easy handles, especia-
+-lly when dealing with multiple threads: see this discussion[4].
+
+[1]: http://curl.haxx.se/libcurl/
+[2]: http://www.tildeslash.com/libzdb/
+[3]: http://curl.haxx.se/libcurl/c/libcurl-tutorial.html#Persistence
+[4]: http://curl.haxx.se/mail/lib-2011-04/0092.html
