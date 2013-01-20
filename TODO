@@ -1,5 +1,5 @@
-* Use the share interface (?): see [2]
 * Extend the sample to illustrate a multi-thread context.
+* Use the share interface (?): see [1]
 * Make possible to configure the pool init and maximum size
 * Make it safe to work with SSL/TLS (multi-thread): see [2]
 
