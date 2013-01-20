@@ -1,8 +1,8 @@
-* Check official recommendations vs multi-threading: see [1]
 * Use the share interface (?): see [2]
 * Extend the sample to illustrate a multi-thread context.
 * Make possible to configure the pool init and maximum size
+* Make it safe to work with SSL/TLS (multi-thread): see [2]
 
-[1]: http://curl.haxx.se/libcurl/c/libcurl-tutorial.html#Multi-threading
+[1]: http://curl.haxx.se/mail/lib-2011-04/0094.html
+[2]: http://curl.haxx.se/libcurl/c/libcurl-tutorial.html#Multi-threading
      http://curl.haxx.se/libcurl/c/threaded-ssl.html
-[2]: http://curl.haxx.se/mail/lib-2011-04/0094.html

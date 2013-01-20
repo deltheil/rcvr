@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <assert.h>
 
 #include <pthread.h>
@@ -8,6 +9,8 @@
 
 #define RCVRPMAXSIZ 4
 #define RCVRPINISIZ 2
+
+static pthread_once_t rcvr_once = PTHREAD_ONCE_INIT;
 
 typedef struct rcvr_handle_t_ {
   CURL *curl;
@@ -24,8 +27,11 @@ static void rcvr_pool_fill(rcvr_pool_t *p);
 static void rcvr_pool_drain(rcvr_pool_t *p);
 static rcvr_handle_t *rcvr_handle_new(void);
 static void rcvr_handle_del(rcvr_handle_t *h);
+static void rcvr_handle_reset(rcvr_handle_t *h);
+static void rcvr_curl_check(void);
 
 rcvr_pool_t *rcvr_pool_new(void) {
+  pthread_once(&rcvr_once, rcvr_curl_check);
   rcvr_pool_t *p = malloc(sizeof(*p));
   p->mtx = malloc(sizeof(pthread_mutex_t));
   if (pthread_mutex_init(p->mtx, NULL) != 0) {
@@ -113,8 +119,7 @@ bool rcvr_pool_checkin(rcvr_pool_t *p, CURL *curl) {
   for (int i = 0; i < size; i++) {
     rcvr_handle_t *h = rcvr_list_get(p->pool, i);
     if (h->curl == curl) {
-      h->available = true;
-      curl_easy_reset(h->curl);
+      rcvr_handle_reset(h);
       break;
     }
   }
@@ -138,7 +143,7 @@ static void rcvr_pool_drain(rcvr_pool_t *p) {
 rcvr_handle_t *rcvr_handle_new(void) {
   rcvr_handle_t *h = malloc(sizeof(*h));
   h->curl = curl_easy_init();
-  h->available = true;
+  rcvr_handle_reset(h);
   return h;
 }
 
@@ -146,4 +151,19 @@ void rcvr_handle_del(rcvr_handle_t *h) {
   assert(h);
   curl_easy_cleanup(h->curl);
   free(h);
+}
+
+/* NOTE: it's mandatory in a multi-threaded context to prevent signals from being
+   used hence `CURLOPT_NOSIGNAL` option */
+static void rcvr_handle_reset(rcvr_handle_t *h) {
+  assert(h);
+  curl_easy_reset(h->curl);
+  curl_easy_setopt(h->curl, CURLOPT_NOSIGNAL, 1L);
+  h->available = true;
+}
+
+static void rcvr_curl_check(void) {
+  curl_version_info_data *info = curl_version_info(CURLVERSION_NOW);
+  if (!(info->features & CURL_VERSION_ASYNCHDNS))
+    fprintf(stderr, "warning: libcurl is built without async DNS support\n");
 }
