@@ -17,12 +17,12 @@ librcvr.a: $(OBJS)
 	$(RANLIB) $@
 
 demo: sample
-	./sample 2>&1 | grep "< HTTP"
+	./sample
 
-sample: sample.o
-	$(CC) -L. -lrcvr -lcurl $< -o $@
+sample: sample.o tools/threadpool.o
+	$(CC) -L. -lrcvr -lcurl $^ -o $@
 
 sample.o: sample.c librcvr.a
 
 clean:
-	$(RM) $(OBJS) sample.o sample librcvr.a
+	$(RM) $(OBJS) sample.o tools/threadpool.o sample librcvr.a
