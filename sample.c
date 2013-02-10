@@ -37,6 +37,7 @@ static size_t write_cb(char *d, size_t n, size_t l, void *p);
 
 int main() {
   curl_global_init(CURL_GLOBAL_ALL);
+  pthread_mutex_init(&ctx_lock, NULL);
 
   /* 1. Basic run w/o pooling */
   ctx_t ctx_basic = {0};
@@ -51,7 +52,7 @@ int main() {
   printf(STATFMT, "pooling ON (rcvr)", ctx_pool.nconn, ctx_pool.nreq);
 
   rcvr_pool_del(ctx_pool.pool);
-
+  pthread_mutex_destroy(&ctx_lock);
   curl_global_cleanup();
 
   return 0;
