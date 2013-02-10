@@ -39,7 +39,7 @@ int main() {
   curl_global_init(CURL_GLOBAL_ALL);
 
   /* 1. Basic run w/o pooling */
-  ctx_t ctx_basic;
+  ctx_t ctx_basic = {0};
   run(&ctx_basic, NTHREADS, NREQS);
 
   /* 2. Run with curl easy handle pooling */
