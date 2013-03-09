@@ -10,7 +10,17 @@
 #define RCVRPMAXSIZ 4
 #define RCVRPINISIZ 2
 
+/** set to 1 to force `CURLOPT_NOSIGNAL` option to 1 */
+#define RCVRFORCENOSIGNAL 0
+
+enum {
+  RCVR_ASYNCHDNS_UNDEF = -1,
+  RCVR_ASYNCHDNS_ON,
+  RCVR_ASYNCHDNS_OFF
+};
+
 static pthread_once_t rcvr_once = PTHREAD_ONCE_INIT;
+static int rcvr_async_dns = RCVR_ASYNCHDNS_UNDEF;
 
 typedef struct rcvr_handle_t_ {
   CURL *curl;
@@ -153,17 +163,33 @@ void rcvr_handle_del(rcvr_handle_t *h) {
   free(h);
 }
 
-/* NOTE: it's mandatory in a multi-threaded context to prevent signals from being
-   used hence `CURLOPT_NOSIGNAL` option */
 static void rcvr_handle_reset(rcvr_handle_t *h) {
   assert(h);
   curl_easy_reset(h->curl);
+#if RCVRFORCENOSIGNAL
   curl_easy_setopt(h->curl, CURLOPT_NOSIGNAL, 1L);
+#else
+  if (rcvr_async_dns == RCVR_ASYNCHDNS_OFF) {
+    /* By default the DNS resolution uses signals to implement the timeout logic
+       but this is not thread-safe (the signal could be executed on another
+       thread than the original thread that started it). When libcurl is not
+       built with async DNS support (threaded resolver or c-ares) one must set
+       the `CURLOPT_NOSIGNAL` option to 0. See:
+       - http://curl.haxx.se/libcurl/c/libcurl-tutorial.html#Multi-threading
+       - http://www.redhat.com/archives/libvir-list/2012-September/msg01960.html
+       - http://curl.haxx.se/mail/lib-2013-03/0086.html
+       */
+    curl_easy_setopt(h->curl, CURLOPT_NOSIGNAL, 1L);
+  }
+#endif
   h->available = true;
 }
 
 static void rcvr_curl_check(void) {
+  rcvr_async_dns = RCVR_ASYNCHDNS_ON;
   curl_version_info_data *info = curl_version_info(CURLVERSION_NOW);
-  if (!(info->features & CURL_VERSION_ASYNCHDNS))
+  if (!(info->features & CURL_VERSION_ASYNCHDNS)) {
+    rcvr_async_dns = RCVR_ASYNCHDNS_OFF;
     fprintf(stderr, "warning: libcurl is built without async DNS support\n");
+  }
 }
