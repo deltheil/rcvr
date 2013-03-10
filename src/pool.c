@@ -174,7 +174,7 @@ static void rcvr_handle_reset(rcvr_handle_t *h) {
        but this is not thread-safe (the signal could be executed on another
        thread than the original thread that started it). When libcurl is not
        built with async DNS support (threaded resolver or c-ares) one must set
-       the `CURLOPT_NOSIGNAL` option to 0. See:
+       the `CURLOPT_NOSIGNAL` option to 1. See:
        - http://curl.haxx.se/libcurl/c/libcurl-tutorial.html#Multi-threading
        - http://www.redhat.com/archives/libvir-list/2012-September/msg01960.html
        - http://curl.haxx.se/mail/lib-2013-03/0086.html
