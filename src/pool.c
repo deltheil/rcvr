@@ -125,16 +125,18 @@ bool rcvr_pool_checkin(rcvr_pool_t *p, CURL *curl) {
     RCVRPUNLOCK(p);
     return false;
   }
+  rcvr_handle_t *h = NULL;
   int size = rcvr_list_size(p->pool);
   for (int i = 0; i < size; i++) {
-    rcvr_handle_t *h = rcvr_list_get(p->pool, i);
-    if (h->curl == curl) {
-      rcvr_handle_reset(h);
+    rcvr_handle_t *hcur = rcvr_list_get(p->pool, i);
+    if (hcur->curl == curl) {
+      rcvr_handle_reset(hcur);
+      h = hcur;
       break;
     }
   }
   RCVRPUNLOCK(p);
-  return true;
+  return h ? true : false;
 }
 
 static void rcvr_pool_fill(rcvr_pool_t *p) {
