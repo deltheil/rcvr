@@ -28,7 +28,7 @@ void rcvr_list_push(rcvr_list_t *list, void *elem) {
   assert(list && elem);
   if (list->size >= list->alloc) {
     list->alloc = 2 * list->alloc;
-    list->ary = realloc(list->ary, list->alloc);
+    list->ary = realloc(list->ary, list->alloc * sizeof(void *));
   }
   list->ary[list->size++] = elem;
 }
