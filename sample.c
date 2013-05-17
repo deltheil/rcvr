@@ -47,7 +47,7 @@ int main() {
   run(&ctx_basic, NTHREADS, NREQS);
 
   /* 2. Run with curl easy handle pooling */
-  ctx_t ctx_pool = { .pool = rcvr_pool_new() };
+  ctx_t ctx_pool = { .pool = rcvr_pool_new2(NTHREADS) };
   run(&ctx_pool, NTHREADS, NREQS);
 
   /* Print some stats */

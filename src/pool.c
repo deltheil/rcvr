@@ -41,6 +41,10 @@ static void rcvr_handle_reset(rcvr_handle_t *h);
 static void rcvr_curl_check(void);
 
 rcvr_pool_t *rcvr_pool_new(void) {
+  return rcvr_pool_new2(RCVRPMAXSIZ);
+}
+
+rcvr_pool_t *rcvr_pool_new2(int size) {
   pthread_once(&rcvr_once, rcvr_curl_check);
   rcvr_pool_t *p = malloc(sizeof(*p));
   p->mtx = malloc(sizeof(pthread_mutex_t));
@@ -50,7 +54,7 @@ rcvr_pool_t *rcvr_pool_new(void) {
     return NULL;
   }
   p->open = false;
-  p->pool = rcvr_list_new(RCVRPMAXSIZ);
+  p->pool = rcvr_list_new(size);
   return p;
 }
 

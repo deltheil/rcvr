@@ -8,8 +8,10 @@
 /* pool of re-usable curl easy handles */
 typedef struct rcvr_pool_t_ rcvr_pool_t;
 
-/* create a pool */
+/* create a pool with default capacity */
 rcvr_pool_t *rcvr_pool_new(void);
+/* create a pool with given capacity */
+rcvr_pool_t *rcvr_pool_new2(int size);
 /* destroy a pool */
 void rcvr_pool_del(rcvr_pool_t *p);
 /* open a pool before using it (true if OK, false otherwise) */
