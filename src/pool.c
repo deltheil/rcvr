@@ -98,6 +98,7 @@ bool rcvr_pool_checkout(rcvr_pool_t *p, CURL **curl) {
     RCVRPUNLOCK(p);
     return false;
   }
+  bool err = false;
   rcvr_handle_t *h = NULL;
   int size = rcvr_list_size(p->pool);
   for (int i = 0; i < size; i++) {
@@ -105,17 +106,20 @@ bool rcvr_pool_checkout(rcvr_pool_t *p, CURL **curl) {
     if (hcur->available) {
       hcur->available = false;
       h = hcur;
-      break;
+      goto done;
     }
   }
-  if (!h && size < RCVRPMAXSIZ) {
+  if (size < RCVRPMAXSIZ) {
     h = rcvr_handle_new();
     h->available = false;
     rcvr_list_push(p->pool, h);
+    goto done;
   }
+  err = true; /* pool over capacity */
+done:
   *curl = h ? h->curl : NULL;
   RCVRPUNLOCK(p);
-  return true;
+  return !err;
 }
 
 bool rcvr_pool_checkin(rcvr_pool_t *p, CURL *curl) {
