@@ -17,6 +17,10 @@ do { \
 
 /* Delays responding for N seconds */
 #define TESTURL "http://httpbin.org/delay/%d"
+#define SLOW    5 /* seconds */
+#define FAST    0 /* second */
+
+static int g_count = 0;
 
 #define NTHREADS 3
 #define NREQS    10
@@ -84,12 +88,14 @@ static void run(ctx_t *ctx, int nthreads, int nreqs) {
 
 static void do_request(void *arg) {
   ctx_t *ctx = (ctx_t *) arg;
+  CURL *curl = NULL;
+  CURLcode rc;
   char url[32];
   pthread_mutex_lock(&ctx_lock);
-  sprintf(url, TESTURL, ctx->nreq + 1);
+  g_count++;
+  sprintf(url, TESTURL, g_count % 2 ? SLOW : FAST);
   pthread_mutex_unlock(&ctx_lock);
 
-  CURL *curl = NULL;
   if (ctx->pool) {
     /* get a curl handle from the pool */
     if (!rcvr_pool_checkout(ctx->pool, &curl)) DIE("pool checkout failed");
@@ -107,7 +113,7 @@ static void do_request(void *arg) {
   /* ... */
 
   /* start the transfer */
-  CURLcode rc = curl_easy_perform(curl);
+  rc = curl_easy_perform(curl);
   if (rc != CURLE_OK) {
     DIE("curl easy perform failed: %s", curl_easy_strerror(rc));
   }
