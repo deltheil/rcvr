@@ -15,9 +15,8 @@ do { \
   exit(1); \
 } while (0)
 
-/* http://httpbin.org is fancier but there is no persistent connections (see the
-   response header: `Connection: close`) */
-#define TESTURL "http://httpstat.us/200"
+/* Delays responding for N seconds */
+#define TESTURL "http://httpbin.org/delay/%d"
 
 #define NTHREADS 3
 #define NREQS    10
@@ -85,6 +84,10 @@ static void run(ctx_t *ctx, int nthreads, int nreqs) {
 
 static void do_request(void *arg) {
   ctx_t *ctx = (ctx_t *) arg;
+  char url[32];
+  pthread_mutex_lock(&ctx_lock);
+  sprintf(url, TESTURL, ctx->nreq + 1);
+  pthread_mutex_unlock(&ctx_lock);
 
   CURL *curl = NULL;
   if (ctx->pool) {
@@ -99,7 +102,7 @@ static void do_request(void *arg) {
   }
 
   /* set custom options */
-  curl_easy_setopt(curl, CURLOPT_URL, TESTURL);
+  curl_easy_setopt(curl, CURLOPT_URL, url);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_cb);
   /* ... */
 
