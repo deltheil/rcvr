@@ -122,11 +122,6 @@ static void do_request(void *arg) {
   long nconn;
   curl_easy_getinfo(curl, CURLINFO_NUM_CONNECTS, &nconn);
 
-  pthread_mutex_lock(&ctx_lock);
-  ctx->nconn += nconn;
-  ctx->nreq++;
-  pthread_mutex_unlock(&ctx_lock);
-
   if (ctx->pool) {
     /* return the handle to the pool */
     rcvr_pool_checkin(ctx->pool, curl);
@@ -136,6 +131,11 @@ static void do_request(void *arg) {
   }
 
   fprintf(stderr, ".");
+
+  pthread_mutex_lock(&ctx_lock);
+  ctx->nconn += nconn;
+  ctx->nreq++;
+  pthread_mutex_unlock(&ctx_lock);
 }
 
 /* NOP write callback */
