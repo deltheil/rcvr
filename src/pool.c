@@ -109,7 +109,7 @@ bool rcvr_pool_checkout(rcvr_pool_t *p, CURL **curl) {
       goto done;
     }
   }
-  if (size < RCVRPMAXSIZ) {
+  if (size < p->pool->alloc) {
     h = rcvr_handle_new();
     h->available = false;
     rcvr_list_push(p->pool, h);
