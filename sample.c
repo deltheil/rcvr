@@ -107,7 +107,10 @@ static void do_request(void *arg) {
   /* ... */
 
   /* start the transfer */
-  if (curl_easy_perform(curl) != CURLE_OK) DIE("curl easy perform failed");
+  CURLcode rc = curl_easy_perform(curl);
+  if (rc != CURLE_OK) {
+    DIE("curl easy perform failed: %s", curl_easy_strerror(rc));
+  }
 
   /* get how many connections have been made */
   long nconn;
